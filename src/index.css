@@ -1,0 +1,342 @@
+/* 
+ * Document Processor - Premium Light Theme
+ * =========================================
+ * Glassmorphism, animated gradients, and premium effects - LIGHT VERSION
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base layer overrides */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-white to-purple-50 text-neutral-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary-500;
+  }
+}
+
+/* Component layer - premium patterns */
+@layer components {
+
+  /* Animated gradient background - Light version */
+  .bg-gradient-animated {
+    background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #ede9fe, #f8fafc);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  /* Glassmorphism card - Light version */
+  .glass-card {
+    @apply relative;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(124, 58, 237, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(124, 58, 237, 0.1);
+  }
+
+  /* Primary button with gradient */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 50%, #06B6D4 100%);
+    background-size: 200% 200%;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-position: 100% 0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(124, 58, 237, 0.4);
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-xl border border-neutral-200 transition-all duration-300;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Premium upload zone - Light version */
+  .upload-zone {
+    @apply relative flex flex-col items-center justify-center min-h-[300px] p-8 rounded-2xl transition-all duration-300 cursor-pointer;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(6, 182, 212, 0.03) 100%);
+    border: 2px dashed rgba(124, 58, 237, 0.3);
+  }
+
+  .upload-zone:hover {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+    border-color: rgba(124, 58, 237, 0.5);
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);
+  }
+
+  .upload-zone.active {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%);
+    border-color: #7C3AED;
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.2);
+  }
+
+  .upload-zone.disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .upload-zone.disabled:hover {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(6, 182, 212, 0.03) 100%);
+    border-color: rgba(124, 58, 237, 0.3);
+    box-shadow: none;
+  }
+
+  /* Progress indicator - Light version */
+  .progress-step {
+    @apply flex items-center gap-3 p-4 rounded-xl transition-all duration-300;
+  }
+
+  .progress-step.active {
+    background: rgba(124, 58, 237, 0.1);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);
+  }
+
+  .progress-step.completed {
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .progress-step.pending {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  /* Mode selector pill - Light version */
+  .mode-selector {
+    @apply relative flex p-1 rounded-2xl;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .mode-btn {
+    @apply relative z-10 flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-neutral-500 transition-all duration-300;
+  }
+
+  .mode-btn.active {
+    @apply text-white;
+  }
+
+  .mode-btn:hover:not(.active) {
+    @apply text-neutral-700;
+  }
+
+  .mode-indicator {
+    @apply absolute top-1 bottom-1 rounded-xl transition-all duration-300;
+    background: linear-gradient(135deg, #7C3AED, #4F46E5);
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  }
+}
+
+/* Utility layer - premium utilities */
+@layer utilities {
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
+  }
+
+  .text-gradient-purple {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+  }
+
+  /* Shimmer effect */
+  .shimmer {
+    background: linear-gradient(90deg,
+        rgba(124, 58, 237, 0) 0%,
+        rgba(124, 58, 237, 0.2) 50%,
+        rgba(124, 58, 237, 0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Glow effect */
+  .glow-purple {
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.3);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
+  }
+}
+
+/* Custom animations */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Floating orbs - decorative background (Light version) */
+.floating-orb {
+  @apply absolute rounded-full opacity-20 blur-3xl;
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-orb-1 {
+  @apply w-96 h-96 -top-48 -left-48;
+  background: linear-gradient(135deg, #A78BFA, #7C3AED);
+  animation-delay: 0s;
+}
+
+.floating-orb-2 {
+  @apply w-80 h-80 -bottom-40 -right-40;
+  background: linear-gradient(135deg, #67E8F9, #06B6D4);
+  animation-delay: -3s;
+}
+
+/* File type badges - Light version */
+.file-badge {
+  @apply inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-300;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7C3AED;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.file-badge:hover {
+  background: rgba(124, 58, 237, 0.15);
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.15);
+}
+
+/* Privacy notice styling - Light version */
+.privacy-notice {
+  @apply flex items-start gap-3 p-4 rounded-xl text-sm;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #16A34A;
+}
+
+/* Error alert styling - Light version */
+.error-alert {
+  @apply flex items-start gap-3 p-4 rounded-xl;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #DC2626;
+}
+
+/* Spinner animation */
+.spinner {
+  @apply w-5 h-5 rounded-full animate-spin;
+  border: 2px solid rgba(124, 58, 237, 0.2);
+  border-top-color: #7C3AED;
+}
+
+/* Success checkmark animation */
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 50;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.checkmark-animate {
+  stroke-dasharray: 50;
+  animation: checkmark 0.5s ease-out forwards;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.5);
+}
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
