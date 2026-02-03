@@ -197,6 +197,9 @@ class DocumentParser:
                         tables.append(df)
 
             full_text = "\n".join(text_content)
+            print(f"DEBUG: Extracted text length: {len(full_text)}")
+            if len(full_text) < 50:
+                 print(f"DEBUG: Low text content! First 50 chars: {full_text[:50]}")
             
             return ParseResult(
                 success=True,
