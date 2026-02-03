@@ -16,8 +16,7 @@ pymupdf
 # Image handling & OCR
 Pillow
 opencv-python-headless
-paddlepaddle
-paddleocr
+
 
 # Async HTTP (for future AI API integration)
 httpx

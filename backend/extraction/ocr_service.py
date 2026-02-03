@@ -17,7 +17,7 @@ import base64
 import fitz  # PyMuPDF
 import numpy as np
 import cv2  # OpenCV
-from paddleocr import PaddleOCR
+# from paddleocr import PaddleOCR  # DISABLED: Causes crash on Render free tier (missing libgl1)
 from typing import List, Dict, Optional
 
 # Load environment variables
