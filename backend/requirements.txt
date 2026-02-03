@@ -1,32 +1,32 @@
 # FastAPI and server
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-python-multipart==0.0.6
+fastapi
+uvicorn[standard]
+python-multipart
 
 # Data processing
-pandas==2.2.0
-openpyxl==3.1.2
+pandas
+openpyxl
 numpy
 
 # PDF processing
-pdfplumber==0.10.3
+pdfplumber
 pymupdf
 
 # Image handling & OCR
-Pillow==10.2.0
+Pillow
 opencv-python-headless
 paddlepaddle
 paddleocr
 
 # Async HTTP (for future AI API integration)
-httpx==0.26.0
+httpx
 
 # AI API Integration
-groq==0.4.2
-python-dotenv==1.0.0
+groq
+python-dotenv
 
 # Authentication & Database
-motor==3.7.1
-python-jose[cryptography]==3.3.0
+motor
+python-jose[cryptography]
 bcrypt
 email-validator
