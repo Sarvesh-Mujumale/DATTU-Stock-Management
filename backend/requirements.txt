@@ -1,11 +1,12 @@
 # FastAPI and server
 fastapi
 uvicorn[standard]
+gunicorn
 python-multipart
 
 # Data processing
 pandas
-openpyxl
+openpyxl    
 numpy
 
 # PDF processing
