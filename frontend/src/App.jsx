@@ -67,8 +67,8 @@ const TabNavigation = ({ activeTab, onTabChange, isAdmin }) => (
         <button
             onClick={() => onTabChange('process')}
             className={`px-6 py-3 rounded-xl font-medium transition-all ${activeTab === 'process'
-                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
-                    : 'bg-white/50 text-neutral-600 hover:bg-white/80'
+                ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
+                : 'bg-white/50 text-neutral-600 hover:bg-white/80'
                 }`}
         >
             📄 Process Bills
@@ -77,8 +77,8 @@ const TabNavigation = ({ activeTab, onTabChange, isAdmin }) => (
             <button
                 onClick={() => onTabChange('admin')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all ${activeTab === 'admin'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg'
-                        : 'bg-white/50 text-neutral-600 hover:bg-white/80'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg'
+                    : 'bg-white/50 text-neutral-600 hover:bg-white/80'
                     }`}
             >
                 👤 User Management
@@ -144,6 +144,10 @@ function BillProcessingDashboard() {
         setErrorMessage('');
     }, []);
 
+
+    // Get API URL from environment
+    const API_URL = import.meta.env.VITE_API_URL;
+
     const handleSingleProcess = useCallback(async () => {
         if (!selectedFile) return;
         setProcessingState(ProcessingState.UPLOADING);
@@ -154,7 +158,7 @@ function BillProcessingDashboard() {
             formData.append('file', selectedFile);
             setProcessingState(ProcessingState.PROCESSING);
 
-            const response = await fetch('/process-document', {
+            const response = await fetch(`${API_URL}/process-document`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -190,7 +194,7 @@ function BillProcessingDashboard() {
             formData.append('auto_detect', 'true');
             setProcessingState(ProcessingState.PROCESSING);
 
-            const response = await fetch('/analyze-bills', {
+            const response = await fetch(`${API_URL}/analyze-bills`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
