@@ -603,7 +603,9 @@ class ExcelGenerator:
             
             # 1. Render Line Items (Products)
             for item in line_items:
-                ws.cell(row=row_num, column=1, value=bill_number if first_item else "").border = self.BORDER
+                bill_num_cell = ws.cell(row=row_num, column=1, value=bill_number if first_item else "")
+                bill_num_cell.border = self.BORDER
+                bill_num_cell.number_format = '@'  # Force text format
                 ws.cell(row=row_num, column=2, value=date if first_item else "").border = self.BORDER
                 ws.cell(row=row_num, column=3, value=party if first_item else "").border = self.BORDER
                 ws.cell(row=row_num, column=4, value=item.item_name).border = self.BORDER
@@ -670,8 +672,13 @@ class ExcelGenerator:
                 ws.cell(row=row_num, column=2, value=date if first_item else "").border = self.BORDER
                 ws.cell(row=row_num, column=3, value=party if first_item else "").border = self.BORDER
                 
-                # Show charge name with prefix
-                charge_name_cell = ws.cell(row=row_num, column=4, value=f"Additional Charge: {charge.charge_name}")
+                # Show charge name with prefix, unless it's a discount
+                if "discount" in charge.charge_name.lower() or "less" in charge.charge_name.lower():
+                     charge_display_name = charge.charge_name.title()
+                else:
+                     charge_display_name = f"Additional Charge: {charge.charge_name}"
+                
+                charge_name_cell = ws.cell(row=row_num, column=4, value=charge_display_name)
                 charge_name_cell.border = self.BORDER
                 charge_name_cell.font = Font(italic=True, color="555555")
                 

@@ -160,8 +160,8 @@ Return a JSON object with this exact structure:
     ],
     "additional_charges": [
         {{
-            "charge_name": "name of the charge (e.g. Packing, Freight)",
-            "quantity": number (optional, default 1),
+            "charge_name": "name of the charge (e.g. Packing, Freight, Discount)",
+            "quantity": number (optional, often 1 but check document),
             "rate": number (optional),
             "amount": number
         }}
@@ -175,46 +175,31 @@ Return a JSON object with this exact structure:
 
 IMPORTANT EXTRACTION RULES:
 1. The text may have fragmented words/numbers due to PDF parsing. Piece together values intelligently.
-2. Look for explicit tax amounts: 
-   - "IGST" sections (e.g. "IGST 879.00").
-   - "CGST" and "SGST" sections.
-   - If you see "IGST 879.00", put 879.00 in "igst" field.
-3. Look for "Sub Total" or "Subtotal" followed by amount
-4. Look for final "Total" amount (usually the largest amount, includes GST)
-5. For items: CAPTURE THE FULL NAME verbatim.
-   - Include ALL model numbers, codes, sizes, and dimensions.
-   - Example: "TROPHY - 646" -> Extract "TROPHY - 646" (Do NOT truncate to just "Trophy")
-   - Example: "Steel bottle 750ml" -> Extract "Steel bottle 750ml"
-   - Combine fragmented item names if they span multiple lines.
-6. Charges vs Items:
-   - Items are physical products (Inventory).
-   - Charges are SERVICES (Packing, Forwarding, Freight, Shipping).
-   - If a Charge like "Packing Charges" has a Quantity (e.g. "1.00 NOS") and Rate ("200.00"), EXTRACT IT in the additional_charges list with quantity and rate.
-7. For discount_percent: 
-   - Look for "Disc.", "Discount", "Less" columns explicitly.
-   - DO NOT confuse GST rates (5%, 12%, 18%, 28%) with discounts. 
-   - If you see "18%" or "12%" near an item, it is likely GST Tax, NOT Discount. 
-   - Only extract discount if it is explicitly marked as discount. Default to 0.
-8. CRITICAL - For amount: The Amount column in the invoice ALREADY shows the DISCOUNTED PRICE (after applying discount). Extract this value DIRECTLY from the PDF. Do NOT calculate it yourself.
-   - Example: If PDF shows Qty=200, Rate=24, and Amount=2,400 with (50%), extract amount as 2400 (not 4800).
-   - VERIFY: If your extracted Amount is much smaller than (Qty * Rate), check if you accidentally extracted the Tax Amount. If so, use (Qty * Rate) instead.
-9. Extract numeric values even if ₹ symbol or commas are present (e.g., "₹ 2,520.00" = 2520.00)
-10. CGST and SGST are usually equal (9% each) BUT only extract them if the AMOUNT is printed.
-11. Grand Total = Trust the printed "Total" or "Grand Total" in the document above all else.
-    - If your calculated sum (Subtotal + Tax) differs from the Document's Printed Total, USE THE PRINTED TOTAL.
-    - Do NOT calculate GST (18%, etc) yourself if the tax amount column is empty.
-    - If the document says "Total: 1900" and "GST 18%", but no tax amount is shown, the Total is 1900. Do not add 18%.
+2. **IGST/GST RULE**: 
+   - Explicitly look for "IGST", "CGST", "SGST" **AMOUNTS**.
+   - **CRITICAL**: If a Tax Rate (e.g. "GST 18%") is mentioned, but the **AMOUNT COLUMN IS EMPTY/BLANK**, then the Tax is 0.00. 
+   - **DO NOT CALCULATE TAX YOURSELF** if the document has a blank tax amount.
+   - If the document total is 1900 and Subtotal is 1900, then Tax is 0, even if "GST 18%" text is visible.
+3. **TRUST THE FINAL TOTAL**:
+   - The "Final Total", "Grand Total", or "Net Amount" printed on the document is the **Ultimate Truth**.
+   - Your extracted fields (Subtotal + Tax + Charges) MUST sum up to this Printed Total.
+   - If your math (Subtotal + 18%) = 2242, but Printed Total = 1900, then **USE 1900**. Force Tax to 0 to match the printed total.
+4. Discounts:
+   - If a "Discount" is listed as a separate line/charge, extract it into 'additional_charges'.
+   - **Naming**: Just name it "Discount" or "Less Discount". Do NOT add extra words.
+   - **Value**: Discounts should usually be negative amounts or clear deductions.
+5. Items vs Charges:
+   - Physical goods -> line_items.
+   - Services (Packing, Freight) -> additional_charges.
+   - Packing Qty: Extract specific "Qty" for Packing/Forwarding if available (e.g. 5 Boxes).
+6. **INVOICE NUMBER RULES**:
+   - Look for "Invoice No", "Bill No", "Memo No".
+   - **CRITICAL**: Capture the FULL alphanumeric string. formatting must be exact.
+   - Examples: "GST/24-25/089", "A-105", "1496 B".
+   - Do not cut off prefixes or suffixes.
 
-12. INVOICE NUMBER RULES:
-    - Look for "Invoice No.", "Bill No.", "Inv No.", "Serial No.".
-    - Invoice numbers are almost always alphanumeric (e.g., "65/25-26", "INV-2024-001").
-    - NEVER return a single letter like "D" or "A".
-    - If the number contains special characters like "/" or "-", PRESERVE THEM. (e.g., "65/25-26" is distinct from "652526").
-
-CRITICAL - DISTINGUISHING line_items FROM additional_charges:
-12. line_items: ONLY actual PRODUCTS with a meaningful quantity.
-13. additional_charges: Service charges, fees, or extras (Packing, Freight, etc).
-    - If "Discount" is listed as a meaningful line item with a negative amount or deduction, capture it.
+7. **Amount Extraction**:
+   - Always extract the 'Amount' column value exactly as printed.
 
 Return ONLY valid JSON, no explanations."""
 
