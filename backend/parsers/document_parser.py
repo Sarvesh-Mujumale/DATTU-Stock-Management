@@ -15,7 +15,7 @@ from enum import Enum
 
 import pandas as pd
 # import pdfplumber
-from PIL import Image
+# from PIL import Image
 
 
 class FileType(Enum):
