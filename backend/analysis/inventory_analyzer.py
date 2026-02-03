@@ -231,7 +231,11 @@ class InventoryAnalyzer:
             key=lambda x: x.sold_qty,
             reverse=True
         )
-        result.top_selling_items = [item.item_name for item in sorted_items[:5]]
+        # Filter for items with significant sales (> 50)
+        # User defined criteria: "items which have saled with more than 50 quantity"
+        top_sellers = [item for item in sorted_items if item.sold_qty > 50]
+        
+        result.top_selling_items = [item.item_name for item in top_sellers[:10]]
         result.items = list(item_map.values())
         
         # Generate insights
