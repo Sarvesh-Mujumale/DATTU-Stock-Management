@@ -216,28 +216,10 @@ class DocumentParser:
 
     def _parse_image(self, file_bytes: bytes) -> ParseResult:
         """
-        Parse image using OCR.
+        Image parsing is DISABLED.
         """
-        try:
-            from extraction.ocr_service import OCRService
-            ocr = OCRService()
-            
-            # Extract raw text from image
-            full_text = ocr.extract_text(file_bytes, file_type="image")
-            
-            # Run text repair
-            from validation.ocr_corrector import OCRCorrector
-            full_text = OCRCorrector.fix_common_ocr_errors(full_text)
-            
-            return ParseResult(
-                success=True,
-                file_type=FileType.IMAGE,
-                text_content=full_text,
-                tables=[]  # OCR returns unstructured text for now
-            )
-        except Exception as e:
-            return ParseResult(
-                success=False,
-                file_type=FileType.IMAGE,
-                error_message=f"Image OCR failed: {str(e)}"
-            )
+        return ParseResult(
+            success=False,
+            file_type=FileType.IMAGE,
+            error_message="Image processing is disabled. Please upload a valid PDF or Excel file."
+        )
