@@ -174,36 +174,42 @@ class DocumentParser:
     
     def _parse_pdf(self, file_bytes: bytes) -> ParseResult:
         """
-        Parse PDF and extract text using pypdf (Pure Python, Robust).
+        Parse PDF and extract text using pdfplumber.
+        (Restored by user request for better accuracy).
         """
         buffer = io.BytesIO(file_bytes)
         text_content = []
         tables = []
 
         try:
-            # Use pypdf for robust text extraction
-            import pypdf
-            reader = pypdf.PdfReader(buffer)
-            
-            for i, page in enumerate(reader.pages):
-                text = page.extract_text()
-                if text:
-                    text_content.append(text)
-                else:
-                    print(f"DEBUG: Page {i+1} empty or scanned.")
+            import pdfplumber
+            with pdfplumber.open(buffer) as pdf:
+                for page in pdf.pages:
+                    # Extract text
+                    page_text = page.extract_text()
+                    if page_text:
+                        text_content.append(page_text)
+
+                    # Extract tables (Optional, kept for structure if needed later)
+                    # page_tables = page.extract_tables()
+                    # for table in page_tables:
+                    #     if table:
+                    #         df = pd.DataFrame(table[1:], columns=table[0])
+                    #         tables.append(df)
 
             full_text = "\n".join(text_content)
             print(f"DEBUG: Extracted text length: {len(full_text)}")
+            if len(full_text) < 50:
+                 print(f"DEBUG: Low text content! First 50 chars: {full_text[:50]}")
             
             return ParseResult(
                 success=True,
                 file_type=FileType.PDF,
                 text_content=full_text,
-                tables=[] # pypdf doesn't support tables, but Groq doesn't need them
+                tables=tables
             )
             
         except Exception as e:
-            print(f"ERROR: PDF processing failed: {e}")
             return ParseResult(
                 success=False,
                 file_type=FileType.PDF,

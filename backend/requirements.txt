@@ -10,8 +10,7 @@ openpyxl
 numpy
 
 # PDF processing
-pypdf
-pymupdf
+pdfplumber
 
 # Image handling & OCR
 
