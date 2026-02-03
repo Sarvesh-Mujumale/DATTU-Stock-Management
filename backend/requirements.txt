@@ -14,8 +14,7 @@ pdfplumber
 pymupdf
 
 # Image handling & OCR
-Pillow
-opencv-python-headless
+
 
 
 # Async HTTP (for future AI API integration)
