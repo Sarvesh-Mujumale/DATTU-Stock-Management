@@ -59,6 +59,8 @@ class AdditionalCharge:
     """
     charge_name: str
     amount: float = 0.0
+    quantity: float = 0.0
+    rate: float = 0.0
 
 
 @dataclass
@@ -158,7 +160,9 @@ Return a JSON object with this exact structure:
     ],
     "additional_charges": [
         {{
-            "charge_name": "name of the charge",
+            "charge_name": "name of the charge (e.g. Packing, Freight)",
+            "quantity": number (optional, default 1),
+            "rate": number (optional),
             "amount": number
         }}
     ],
@@ -171,7 +175,10 @@ Return a JSON object with this exact structure:
 
 IMPORTANT EXTRACTION RULES:
 1. The text may have fragmented words/numbers due to PDF parsing. Piece together values intelligently.
-2. Look for GST patterns like "SGST@9.0%" or "CGST@9%" followed by amounts like "₹ 226.80"
+2. Look for explicit tax amounts: 
+   - "IGST" sections (e.g. "IGST 879.00").
+   - "CGST" and "SGST" sections.
+   - If you see "IGST 879.00", put 879.00 in "igst" field.
 3. Look for "Sub Total" or "Subtotal" followed by amount
 4. Look for final "Total" amount (usually the largest amount, includes GST)
 5. For items: CAPTURE THE FULL NAME verbatim.
@@ -179,7 +186,10 @@ IMPORTANT EXTRACTION RULES:
    - Example: "TROPHY - 646" -> Extract "TROPHY - 646" (Do NOT truncate to just "Trophy")
    - Example: "Steel bottle 750ml" -> Extract "Steel bottle 750ml"
    - Combine fragmented item names if they span multiple lines.
-6. For rate: look for per-unit price (often near quantity)
+6. Charges vs Items:
+   - Items are physical products (Inventory).
+   - Charges are SERVICES (Packing, Forwarding, Freight, Shipping).
+   - If a Charge like "Packing Charges" has a Quantity (e.g. "1.00 NOS") and Rate ("200.00"), EXTRACT IT in the additional_charges list with quantity and rate.
 7. For discount_percent: 
    - Look for "Disc.", "Discount", "Less" columns explicitly.
    - DO NOT confuse GST rates (5%, 12%, 18%, 28%) with discounts. 
@@ -187,6 +197,7 @@ IMPORTANT EXTRACTION RULES:
    - Only extract discount if it is explicitly marked as discount. Default to 0.
 8. CRITICAL - For amount: The Amount column in the invoice ALREADY shows the DISCOUNTED PRICE (after applying discount). Extract this value DIRECTLY from the PDF. Do NOT calculate it yourself.
    - Example: If PDF shows Qty=200, Rate=24, and Amount=2,400 with (50%), extract amount as 2400 (not 4800).
+   - VERIFY: If your extracted Amount is much smaller than (Qty * Rate), check if you accidentally extracted the Tax Amount. If so, use (Qty * Rate) instead.
 9. Extract numeric values even if ₹ symbol or commas are present (e.g., "₹ 2,520.00" = 2520.00)
 10. CGST and SGST are usually equal (9% each) BUT only extract them if the AMOUNT is printed.
 11. Grand Total = Trust the printed "Total" or "Grand Total" in the document above all else.
@@ -317,10 +328,15 @@ Return ONLY valid JSON, no explanations."""
             for charge in data.get("additional_charges", []):
                 charge_name = charge.get("charge_name", "")
                 charge_amount = float(charge.get("amount", 0) or 0)
+                charge_qty = float(charge.get("quantity", 0) or 0)
+                charge_rate = float(charge.get("rate", 0) or 0)
+                
                 if charge_name and charge_amount > 0:
                     result.additional_charges.append(AdditionalCharge(
                         charge_name=charge_name,
-                        amount=charge_amount
+                        amount=charge_amount,
+                        quantity=charge_qty,
+                        rate=charge_rate
                     ))
             
             print(f"[AI_EXTRACTOR] ✓ Extraction successful! Found {len(result.line_items)} items, {len(result.additional_charges)} charges")

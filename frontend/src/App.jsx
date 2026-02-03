@@ -284,7 +284,7 @@ function AuthenticatedApp() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-animated overflow-hidden relative">
+        <div className="min-h-screen bg-gradient-animated overflow-hidden relative animate-fade-in">
             {/* Floating background orbs */}
             <div className="floating-orb floating-orb-1" />
             <div className="floating-orb floating-orb-2" />
@@ -312,7 +312,7 @@ function AuthenticatedApp() {
                 <PrivacyNotice />
 
                 <footer className="text-center mt-8 text-neutral-500 text-sm">
-                    <p>DATTU AI Safety Platform 1.0 </p>
+                    <p>DATTU AI Platform 1.0 </p>
                 </footer>
             </div>
         </div>

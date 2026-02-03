@@ -47,10 +47,10 @@ export default function Header() {
 
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-gradient">
-                            DATTU BILL
+                            DATTU 
                         </h1>
                         <p className="text-neutral-600 text-sm sm:text-base mt-1">
-                            AI-Powered Invoice Processing •
+                            Stock Management System •
                             <span className="text-primary-600 font-medium"> Secure & Private</span>
                         </p>
                     </div>
