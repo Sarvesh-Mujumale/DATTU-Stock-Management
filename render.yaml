@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: dattu-backend-docker
+    runtime: docker
+    repo: https://github.com/Sarvesh-Mujumale/DATTU-Stock-Management
+    plan: free
+    region: singapore
+    branch: main
+    rootDir: backend
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MONGODB_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false

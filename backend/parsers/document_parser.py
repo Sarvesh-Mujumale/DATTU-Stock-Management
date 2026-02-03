@@ -14,7 +14,7 @@ from typing import Optional
 from enum import Enum
 
 import pandas as pd
-import pdfplumber
+# import pdfplumber
 from PIL import Image
 
 
@@ -174,41 +174,36 @@ class DocumentParser:
     
     def _parse_pdf(self, file_bytes: bytes) -> ParseResult:
         """
-        Parse PDF and extract text. Handles standard digital PDFs.
-        Fallback to Vision AI if text is empty/garbage (Scanned PDF).
+        Parse PDF and extract text using pypdf (Pure Python, Robust).
         """
         buffer = io.BytesIO(file_bytes)
         text_content = []
         tables = []
 
         try:
-            with pdfplumber.open(buffer) as pdf:
-                for page in pdf.pages:
-                    # Extract text
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_content.append(page_text)
-
-                    # Extract tables
-                    page_tables = page.extract_tables()
-                    for table in page_tables:
-                        # Convert table to DataFrame
-                        df = pd.DataFrame(table[1:], columns=table[0])
-                        tables.append(df)
+            # Use pypdf for robust text extraction
+            import pypdf
+            reader = pypdf.PdfReader(buffer)
+            
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text:
+                    text_content.append(text)
+                else:
+                    print(f"DEBUG: Page {i+1} empty or scanned.")
 
             full_text = "\n".join(text_content)
             print(f"DEBUG: Extracted text length: {len(full_text)}")
-            if len(full_text) < 50:
-                 print(f"DEBUG: Low text content! First 50 chars: {full_text[:50]}")
             
             return ParseResult(
                 success=True,
                 file_type=FileType.PDF,
                 text_content=full_text,
-                tables=tables
+                tables=[] # pypdf doesn't support tables, but Groq doesn't need them
             )
             
         except Exception as e:
+            print(f"ERROR: PDF processing failed: {e}")
             return ParseResult(
                 success=False,
                 file_type=FileType.PDF,
