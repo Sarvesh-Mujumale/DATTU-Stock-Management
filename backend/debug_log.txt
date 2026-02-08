@@ -1,0 +1,48 @@
+[2026-02-08 13:49:42] STARTING EXTRACTION. Text len: 552
+[2026-02-08 13:49:42] TEXT PREVIEW: 
+    TAX INVOICE
+    
+    Vendor: ABC Electronics Pvt Ltd
+    Address: 123 Tech Park, Bangalore 560001
+    GSTIN: 29ABCDE1234F1Z5
+    
+    Invoice No: INV-2024-001
+    Date: 25-Oct-2024
+    
+    Item ...
+[2026-02-08 13:49:43] GROQ RESPONSE: ```json
+{
+    "invoice_number": "INV-2024-001",
+    "date": "25-Oct-2024",
+    "vendor_name": "ABC Electronics Pvt Ltd",
+    "line_items": [
+        {
+            "item_name": "Wireless Mouse",
+            "quantity": 10,
+            "rate": 500.00,
+            "discount_percent": 0,
+            "amount": 5000.00
+        },
+        {
+            "item_name": "Keyboard Mechanical",
+            "quantity": 5,
+            "rate": 1500.00,
+            "discount_percent": 0,
+            "amount": 7500.00
+        },
+        {
+            "item_name": "USB Hub",
+            "quantity": 2,
+            "rate": 300.00,
+            "discount_percent": 0,
+            "amount": 600.00
+        }
+    ],
+    "additional_charges": [],
+    "subtotal": 13100.00,
+    "cgst": 1179.00,
+    "sgst": 1179.00,
+    "igst": 0,
+    "total": 15458.00
+}
+```

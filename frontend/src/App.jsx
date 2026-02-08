@@ -8,9 +8,7 @@
 import React, { useState, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
-import FileUpload from './components/FileUpload';
 import MultiFileUpload from './components/MultiFileUpload';
-import BillTypeSelector, { ProcessingMode } from './components/BillTypeSelector';
 import ProcessingStatus from './components/ProcessingStatus';
 import ErrorDisplay from './components/ErrorDisplay';
 import PrivacyNotice from './components/PrivacyNotice';
@@ -122,65 +120,13 @@ const UserInfoBar = ({ user, onLogout }) => (
 // Main Dashboard Component (Bill Processing)
 function BillProcessingDashboard() {
     const { token } = useAuth();
-    const [mode, setMode] = useState(ProcessingMode.SINGLE);
-    const [selectedFile, setSelectedFile] = useState(null);
     const [purchaseFiles, setPurchaseFiles] = useState([]);
     const [salesFiles, setSalesFiles] = useState([]);
     const [processingState, setProcessingState] = useState(ProcessingState.IDLE);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleModeChange = useCallback((newMode) => {
-        setMode(newMode);
-        setSelectedFile(null);
-        setPurchaseFiles([]);
-        setSalesFiles([]);
-        setProcessingState(ProcessingState.IDLE);
-        setErrorMessage('');
-    }, []);
-
-    const handleFileSelect = useCallback((file) => {
-        setSelectedFile(file);
-        setProcessingState(ProcessingState.IDLE);
-        setErrorMessage('');
-    }, []);
-
-
     // Get API URL from environment
     const API_URL = import.meta.env.VITE_API_URL;
-
-    const handleSingleProcess = useCallback(async () => {
-        if (!selectedFile) return;
-        setProcessingState(ProcessingState.UPLOADING);
-        setErrorMessage('');
-
-        try {
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            setProcessingState(ProcessingState.PROCESSING);
-
-            const response = await fetch(`${API_URL}/process-document`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || 'Processing failed');
-            }
-
-            setProcessingState(ProcessingState.GENERATING);
-            const blob = await response.blob();
-            const filename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'processed_document.xlsx';
-            downloadBlob(blob, filename);
-            setProcessingState(ProcessingState.COMPLETE);
-        } catch (error) {
-            console.error('Processing error:', error);
-            setProcessingState(ProcessingState.ERROR);
-            setErrorMessage(error.message || 'An unexpected error occurred');
-        }
-    }, [selectedFile, token]);
 
     const handleAnalysisProcess = useCallback(async () => {
         if (purchaseFiles.length === 0 && salesFiles.length === 0) return;
@@ -201,9 +147,20 @@ function BillProcessingDashboard() {
                 },
                 body: formData
             });
+
             if (!response.ok) {
+                // Try to parse the error response as JSON
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || 'Analysis failed');
+
+                // Prioritize 'detail' (FastAPI standard) or 'error' (custom) fields
+                const specificMessage = errorData.detail || errorData.error;
+
+                if (specificMessage) {
+                    throw new Error(specificMessage);
+                }
+
+                // Fallback for generic errors
+                throw new Error(`Analysis failed with status ${response.status}`);
             }
 
             setProcessingState(ProcessingState.GENERATING);
@@ -214,25 +171,47 @@ function BillProcessingDashboard() {
         } catch (error) {
             console.error('Analysis error:', error);
             setProcessingState(ProcessingState.ERROR);
-            setErrorMessage(error.message || 'An unexpected error occurred');
+            setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
         }
     }, [purchaseFiles, salesFiles, token]);
 
     const handleSuccessDismiss = useCallback(() => {
         setPurchaseFiles([]);
         setSalesFiles([]);
-        setSelectedFile(null);
         setProcessingState(ProcessingState.IDLE);
     }, []);
 
-    const handleProcess = mode === ProcessingMode.SINGLE ? handleSingleProcess : handleAnalysisProcess;
-    const canProcess = mode === ProcessingMode.SINGLE ? selectedFile !== null : (purchaseFiles.length > 0 || salesFiles.length > 0);
+    const canProcess = purchaseFiles.length > 0 || salesFiles.length > 0;
     const handleRetry = useCallback(() => { setProcessingState(ProcessingState.IDLE); setErrorMessage(''); }, []);
     const isProcessing = [ProcessingState.UPLOADING, ProcessingState.PROCESSING, ProcessingState.GENERATING].includes(processingState);
 
     return (
         <>
-            <BillTypeSelector mode={mode} onModeChange={handleModeChange} />
+            <div className="relative mb-12 text-center animate-slide-up">
+                {/* Decorative Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-primary-700 border border-primary-100 mb-6 shadow-sm hover:shadow-md transition-all duration-300">
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                    </span>
+                    <span className="text-xs font-semibold tracking-wide uppercase">AI-Powered Analysis</span>
+                </div>
+
+                {/* Main Title with Gradient and Glow */}
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 via-indigo-600 to-cyan-500 animate-gradient-x">
+                        Inventory Intelligence
+                    </span>
+                </h2>
+
+                {/* Subtitle */}
+                <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+                    Transform your raw bills into actionable insights. Upload your
+                    <span className="font-semibold text-neutral-800"> Purchase</span> &
+                    <span className="font-semibold text-neutral-800"> Sales</span> bills
+                    below to generate a comprehensive report.
+                </p>
+            </div>
 
             {processingState === ProcessingState.ERROR && (
                 <ErrorDisplay message={errorMessage} onRetry={handleRetry} onDismiss={handleRetry} />
@@ -242,20 +221,16 @@ function BillProcessingDashboard() {
 
             {processingState === ProcessingState.IDLE && (
                 <>
-                    {mode === ProcessingMode.SINGLE ? (
-                        <FileUpload onFileSelect={handleFileSelect} selectedFile={selectedFile} disabled={isProcessing} />
-                    ) : (
-                        <MultiFileUpload purchaseFiles={purchaseFiles} salesFiles={salesFiles} onPurchaseFilesChange={setPurchaseFiles} onSalesFilesChange={setSalesFiles} disabled={isProcessing} />
-                    )}
+                    <MultiFileUpload purchaseFiles={purchaseFiles} salesFiles={salesFiles} onPurchaseFilesChange={setPurchaseFiles} onSalesFilesChange={setSalesFiles} disabled={isProcessing} />
 
                     <button
                         type="button"
-                        onClick={handleProcess}
+                        onClick={handleAnalysisProcess}
                         disabled={!canProcess || isProcessing}
                         className={`w-full mt-8 py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform
                             ${canProcess && !isProcessing ? 'btn-primary hover:scale-[1.02]' : 'bg-neutral-200 text-neutral-400 cursor-not-allowed border border-neutral-300'}`}
                     >
-                        {mode === ProcessingMode.SINGLE ? '✨ Process Document' : `📊 Analyze ${purchaseFiles.length + salesFiles.length} Bills`}
+                        {`📊 Analyze ${purchaseFiles.length + salesFiles.length} Bills`}
                     </button>
                 </>
             )}

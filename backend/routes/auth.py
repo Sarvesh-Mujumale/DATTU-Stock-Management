@@ -79,7 +79,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     
     # Check if user is already logged in on another device
-    if is_session_active(user):
+    # EXCEPTION: Admins can login on multiple devices
+    if user.get("role") != "admin" and is_session_active(user):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Already logged in on another device"
