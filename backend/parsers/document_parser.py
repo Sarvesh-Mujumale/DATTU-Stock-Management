@@ -197,10 +197,19 @@ class DocumentParser:
                     #         df = pd.DataFrame(table[1:], columns=table[0])
                     #         tables.append(df)
 
-            full_text = "\n".join(text_content)
+            full_text = "\n".join(text_content).strip()
             print(f"DEBUG: Extracted text length: {len(full_text)}")
+            print(f"[PDF_PARSER] Extracted {len(full_text)} chars from PDF") 
+            
+            # Scanned PDF Detection:
+            # If a PDF has 0 or remarkably few characters, it is likely an image scan.
             if len(full_text) < 50:
-                 print(f"DEBUG: Low text content! First 50 chars: {full_text[:50]}")
+                 print(f"DEBUG: Scanned PDF detected! Text length: {len(full_text)}")
+                 return ParseResult(
+                    success=False,
+                    file_type=FileType.PDF,
+                    error_message="This appears to be a Scanned/Image-based PDF. This system currently only supports digital/text-based PDFs. Please upload the original digital file."
+                )
             
             return ParseResult(
                 success=True,

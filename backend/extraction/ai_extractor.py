@@ -136,22 +136,26 @@ class AIExtractor:
         print(f"\n{'='*60}")
         print(f"[AI_EXTRACTOR] Starting AI extraction")
         print(f"[AI_EXTRACTOR] Text length: {len(text_content)} chars")
+        print(f"[AI_EXTRACTOR] API Key loaded? {'Yes' if self.groq_client.api_key else 'NO'}") # Check if key exists
         print(f"{'='*60}")
         
+        # Log preview of text to stdout (Render logs)
+        print(f"[AI_EXTRACTOR] TEXT PREVIEW: {text_content[:200]}...")
+        
         try:
-            prompt = f"""Extract data from this Indian invoice/bill. The text may be fragmented due to PDF extraction.
+            prompt = f"""You are a Forensic Document Analyzer. Your job is to perform a DEEP SCAN of this document and extract data with 100% FATAL PRECISION.
 
 DOCUMENT TEXT:
 {text_content}
 
 Return a JSON object with this exact structure:
 {{
-    "invoice_number": "string or empty",
-    "date": "string or empty",
-    "vendor_name": "string or empty",
+    "invoice_number": "string",
+    "date": "string",
+    "vendor_name": "string",
     "line_items": [
         {{
-            "item_name": "product name/description",
+            "item_name": "string",
             "quantity": number,
             "rate": number,
             "discount_percent": number,
@@ -160,9 +164,9 @@ Return a JSON object with this exact structure:
     ],
     "additional_charges": [
         {{
-            "charge_name": "name of the charge (e.g. Packing, Freight, Discount)",
-            "quantity": number (optional, often 1 but check document),
-            "rate": number (optional),
+            "charge_name": "string",
+            "quantity": number,
+            "rate": number,
             "amount": number
         }}
     ],
@@ -173,35 +177,35 @@ Return a JSON object with this exact structure:
     "total": number
 }}
 
-IMPORTANT EXTRACTION RULES:
-1. The text may have fragmented words/numbers due to PDF parsing. Piece together values intelligently.
-2. **IGST/GST RULE**: 
-   - Explicitly look for "IGST", "CGST", "SGST" **AMOUNTS**.
-   - **CRITICAL**: If a Tax Rate (e.g. "GST 18%") is mentioned, but the **AMOUNT COLUMN IS EMPTY/BLANK**, then the Tax is 0.00. 
-   - **DO NOT CALCULATE TAX YOURSELF** if the document has a blank tax amount.
-   - If the document total is 1900 and Subtotal is 1900, then Tax is 0, even if "GST 18%" text is visible.
-3. **TRUST THE FINAL TOTAL**:
-   - The "Final Total", "Grand Total", or "Net Amount" printed on the document is the **Ultimate Truth**.
-   - Your extracted fields (Subtotal + Tax + Charges) MUST sum up to this Printed Total.
-   - If your math (Subtotal + 18%) = 2242, but Printed Total = 1900, then **USE 1900**. Force Tax to 0 to match the printed total.
-4. Discounts:
-   - If a "Discount" is listed as a separate line/charge, extract it into 'additional_charges'.
-   - **Naming**: Just name it "Discount" or "Less Discount". Do NOT add extra words.
-   - **Value**: Discounts should usually be negative amounts or clear deductions.
-5. Items vs Charges:
-   - Physical goods -> line_items.
-   - Services (Packing, Freight) -> additional_charges.
-   - Packing Qty: Extract specific "Qty" for Packing/Forwarding if available (e.g. 5 Boxes).
-6. **INVOICE NUMBER RULES**:
-   - Look for "Invoice No", "Bill No", "Memo No".
-   - **CRITICAL**: Capture the FULL alphanumeric string. formatting must be exact.
-   - Examples: "GST/24-25/089", "A-105", "1496 B".
-   - Do not cut off prefixes or suffixes.
+*** DEEP ANALYSIS PROTOCOLS (STRICT ADHERENCE REQUIRED) ***
 
-7. **Amount Extraction**:
-   - Always extract the 'Amount' column value exactly as printed.
+1. **VERBATIM EXTRACTION (NO SUMMARIZATION)**
+   - **Vendor Name**: Extract the FULL legal entity name (e.g., "Sai Enterprises Pvt Ltd", NOT just "Sai Enterprises"). Checks top header and bottom signature areas.
+   - **Invoice Number**: Capture every character, symbol, and digit. (e.g., "GST/2024-25/001" -> extract fully).
+   - **Item Names**: CAPTURE EVERYTHING. Include Model Numbers, Codes, Colours, Sizes, and Brands. (e.g., "Trophy 646 Gold large" -> extract fully).
 
-Return ONLY valid JSON, no explanations."""
+2. **INTELLIGENT COLUMN MAPPING**
+   - The text might be jumbled. Look for patterns:
+     - "Item | HSN | Qty | Rate | Amount" -> identifying the structure is key.
+     - Do NOT confuse "HSN Code" (usually 4-8 digits) with "Rate" or "Quantity".
+     - Do NOT confuse "Serial Number" (1, 2, 3) with "Quantity".
+
+3. **DATE PRECISION**
+   - Look for "Invoice Date", "Bill Date", or "Date".
+   - If multiple dates exist (e.g., "PO Date", "Challan Date"), IGNORE THEM. Only extract the **Invoice/Bill Date**.
+
+4. **FINANCIAL MATH & LOGIC**
+   - **Tax Rule**: If there is no explicit Tax Amount column with non-zero values, Tax is 0. Do not calculate it yourself based on percentages found in small print.
+   - **Total Verification**: The "Grand Total" printed on the paper is the Truth. Your calculated total MUST match it.
+
+5. **DISCOUNTS & ADJUSTMENTS**
+   - Search deeply for "Less:", "Discount", "Round Off".
+   - "Round Off" should be treated as an additional charge (can be negative).
+
+6. **NO HALLUCINATIONS**
+   - If a field is missing, return empty string "" or 0. Do NOT guess.
+
+Perform this deep analysis now. Return ONLY valid JSON."""
 
             print(f"[AI_EXTRACTOR] Calling Groq AI...")
             
@@ -223,7 +227,10 @@ Return ONLY valid JSON, no explanations."""
             
             response_text = response.choices[0].message.content.strip()
             print(f"[AI_EXTRACTOR] Groq response received ({len(response_text)} chars)")
-            
+            print(f"[AI_EXTRACTOR] RAW RESPONSE: {response_text}") # Log raw response to stdout
+
+
+
             # Clean up response - remove markdown code blocks if present
             if response_text.startswith("```"):
                 response_text = response_text.split("```")[1]
